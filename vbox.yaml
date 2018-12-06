@@ -1,0 +1,41 @@
+---
+- name: Create a New Oracle VirtualBox Machine
+  hosts: vm-host
+  vars:
+    vm_name:  "ca_server"
+    os: "Ubuntu_64"
+    bf: "/vbox"
+    mem:  "5120"
+    port: "7001"
+    bridge: "enp129s0f0"
+    filename: "/vbox/ca_server/ca.vdi"
+    hdd: "50000"
+    medium_os:  "/vbox/ubuntu-18.04.1.0-live-server-amd64.iso"
+  become: yes
+  check_mode: yes
+
+
+  tasks:
+  - name: Create a Virtual Machine
+    command: vboxmanage createvm --name {{ vm_name }} --ostype {{ os }} --register --basefolder {{ bf }}
+
+  - name: Allocate Memory and port
+    command:  vboxmanage modifyvm {{ vm_name }} --memory {{ mem }} --boot1 dvd --vrde on --vrdeport {{ port }}
+
+  - name: Allocate Bridge Adapter
+    command:  vboxmanage modifyvm {{ vm_name }} --nic1 bridged --bridgeadapter1 {{ bridge }}
+
+  - name: Allocate Storage
+    command:  vboxmanage storagectl {{ vm_name }} --name "ubuntu1_SATA" --add sata
+
+  - name: Allocate Base File Path
+    command:  vboxmanage createhd --filename {{ filename }} --size {{ hdd }} --format VDI --variant Standard
+
+  - name: Allocate Base File Path for hdd
+    command:  vboxmanage storageattach {{ vm_name }} --storagectl ubuntu1_SATA --port 1 --type hdd --medium {{ filename }}
+
+  - name: Allocate OS ISO Image in the medium
+    command:  vboxmanage storageattach {{ vm_name }} --storagectl ubuntu1_SATA --port 0 --type dvddrive --medium {{ medium_os }}
+
+  - name: Start the VM
+    command:  vboxmanage startvm {{ vm_name }} --type headless
