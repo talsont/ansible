@@ -37,5 +37,5 @@
   - name: Allocate OS ISO Image in the medium
     command:  vboxmanage storageattach {{ vm_name }} --storagectl ubuntu1_SATA --port 0 --type dvddrive --medium {{ medium_os }}
 
-  - name: Start the VM
+  - name: Starting VM
     command:  vboxmanage startvm {{ vm_name }} --type headless
