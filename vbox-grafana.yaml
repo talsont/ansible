@@ -1,0 +1,42 @@
+---
+- name: Create a New Oracle VirtualBox Machine
+  hosts: vm-host
+  vars:
+    vm_name:  "grafana"
+    os: "Ubuntu_64"
+    bf: "/vbox"
+    mem:  "10240"
+    cpu:  "8"
+    port: "7088"
+    bridge: "enp129s0f0"
+    filename: "/vbox/grafana/grafana.vdi"
+    hdd: "300000"
+    medium_os:  "/vbox/ubuntu-18.04.1.0-live-server-amd64.iso"
+  become: yes
+  check_mode: yes
+
+
+  tasks:
+  - name: Create a Virtual Machine
+    command: vboxmanage createvm --name {{ vm_name }} --ostype {{ os }} --register --basefolder {{ bf }}
+
+  - name: Allocate Memory and port
+    command:  vboxmanage modifyvm {{ vm_name }} --memory {{ mem }} --cpus {{ cp }} --boot1 dvd --vrde on --vrdeport {{ port }}
+
+  - name: Allocate Bridge Adapter
+    command:  vboxmanage modifyvm {{ vm_name }} --nic1 bridged --bridgeadapter1 {{ bridge }}
+
+  - name: Allocate Storage
+    command:  vboxmanage storagectl {{ vm_name }} --name "ubuntu1_SATA" --add sata
+
+  - name: Allocate Base File Path
+    command:  vboxmanage createhd --filename {{ filename }} --size {{ hdd }} --format VDI --variant Standard
+
+  - name: Allocate Base File Path for hdd
+    command:  vboxmanage storageattach {{ vm_name }} --storagectl ubuntu1_SATA --port 1 --type hdd --medium {{ filename }}
+
+  - name: Allocate OS ISO Image in the medium
+    command:  vboxmanage storageattach {{ vm_name }} --storagectl ubuntu1_SATA --port 0 --type dvddrive --medium {{ medium_os }}
+
+  - name: Starting VM
+    command:  vboxmanage startvm {{ vm_name }} --type headless
