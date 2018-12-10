@@ -2,7 +2,7 @@
 - name: Create a New Oracle VirtualBox Machine
   hosts: vm-host
   vars:
-    vm_name:  "grafana"
+    vm_name:  "grafana-server"
     os: "Ubuntu_64"
     bf: "/vbox"
     mem:  "10240"
@@ -13,7 +13,7 @@
     hdd: "300000"
     medium_os:  "/vbox/ubuntu-18.04.1.0-live-server-amd64.iso"
   become: yes
-  check_mode: yes
+  #check_mode: no
 
 
   tasks:
@@ -21,7 +21,7 @@
     command: vboxmanage createvm --name {{ vm_name }} --ostype {{ os }} --register --basefolder {{ bf }}
 
   - name: Allocate Memory and port
-    command:  vboxmanage modifyvm {{ vm_name }} --memory {{ mem }} --cpus {{ cp }} --boot1 dvd --vrde on --vrdeport {{ port }}
+    command:  vboxmanage modifyvm {{ vm_name }} --memory {{ mem }} --cpus {{ cpu }} --boot1 dvd --vrde on --vrdeport {{ port }}
 
   - name: Allocate Bridge Adapter
     command:  vboxmanage modifyvm {{ vm_name }} --nic1 bridged --bridgeadapter1 {{ bridge }}
